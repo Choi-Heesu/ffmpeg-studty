@@ -7,7 +7,7 @@ set(CMAKE_BUILD_TYPE Debug)
 add_subdirectory(lib/ffmpeg)
 
 list(APPEND SOURCES
-  src/hello.cpp
+  src/01_example_scanning.cpp
 )
 
 add_executable(ffmpeg-study ${SOURCES})
