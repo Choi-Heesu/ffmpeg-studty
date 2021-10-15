@@ -29,9 +29,9 @@ int main(int argc, const char** argv) {
     return 0;
   }
 
-  for (int i = 0; i < av_format_ctx->nb_streams; ++i) {
+  for (int index = 0; index < av_format_ctx->nb_streams; ++index) {
     // AVCodecParameters는 스트림에 사용된 코덱 속성에 대한 정보를 가지고 있음
-    AVCodecParameters* av_codec_params = av_format_ctx->streams[i]->codecpar;
+    AVCodecParameters* av_codec_params = av_format_ctx->streams[index]->codecpar;
 
     if (av_codec_params->codec_type == AVMEDIA_TYPE_VIDEO) {
       printf("-------- video info --------\n");
@@ -48,7 +48,7 @@ int main(int argc, const char** argv) {
     }
   }
 
-  // 내부에서 할당한 메모리 해제
+  // AVFormatContext 내부에서 할당한 메모리 해제
   avformat_close_input(&av_format_ctx);
 
   return 0;
