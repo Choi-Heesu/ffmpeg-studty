@@ -6,9 +6,12 @@ set(CMAKE_BUILD_TYPE Debug)
 
 add_subdirectory(lib/ffmpeg)
 
-list(APPEND SOURCES
-  src/01_example_scanning.cpp
-)
+link_libraries(FFmpeg)
 
-add_executable(ffmpeg-study ${SOURCES})
-target_link_libraries(ffmpeg-study FFmpeg ${EXTRA_LIBS})
+file(GLOB srcs src/*.cpp)
+
+foreach(src ${srcs})
+  get_filename_component(TARGET ${src} NAME_WE)
+  add_executable(${TARGET} ${src})
+  message(STATUS "${TARGET} added")
+endforeach()
