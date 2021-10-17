@@ -4,11 +4,11 @@ extern "C" {
 #include <stdio.h>
 }
 
-typedef struct FileContext {
+struct FileContext {
   AVFormatContext* av_format_ctx;
   int v_index;
   int a_index;
-} FileContext;
+};
 
 static FileContext input_ctx;
 
