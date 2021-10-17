@@ -37,8 +37,7 @@ int main(int argc, const char** argv) {
       printf("-------- video info --------\n");
       printf("codec_id : %d\n", av_codec_params->codec_id);
       printf("bitrate : %lld\n", av_codec_params->bit_rate);
-      printf("width : %d, height : %d\n", av_codec_params->width,
-             av_codec_params->height);
+      printf("width : %d, height : %d\n", av_codec_params->width, av_codec_params->height);
     } else if (av_codec_params->codec_type == AVMEDIA_TYPE_AUDIO) {
       printf("-------- audio info --------\n");
       printf("codec_id : %d\n", av_codec_params->codec_id);

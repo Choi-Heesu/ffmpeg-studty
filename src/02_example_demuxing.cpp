@@ -67,24 +67,21 @@ static int open_input(const char* filename) {
   }
 
   if (avformat_find_stream_info(input_ctx.av_format_ctx, NULL) < 0) {
-    printf("Fail to retrieve input stream information\n");
+    printf("Failed to retrieve input stream information\n");
     return -1;
   }
 
   for (int index = 0; index < input_ctx.av_format_ctx->nb_streams; ++index) {
-    AVCodecParameters* av_codec_params =
-        input_ctx.av_format_ctx->streams[index]->codecpar;
-    if (av_codec_params->codec_type == AVMEDIA_TYPE_VIDEO &&
-        input_ctx.v_index < 0) {
+    AVCodecParameters* av_codec_params = input_ctx.av_format_ctx->streams[index]->codecpar;
+    if (av_codec_params->codec_type == AVMEDIA_TYPE_VIDEO && input_ctx.v_index < 0) {
       input_ctx.v_index = index;
-    } else if (av_codec_params->codec_type == AVMEDIA_TYPE_AUDIO &&
-               input_ctx.a_index < 0) {
+    } else if (av_codec_params->codec_type == AVMEDIA_TYPE_AUDIO && input_ctx.a_index < 0) {
       input_ctx.a_index = index;
     }
   }
 
   if (input_ctx.v_index < 0 && input_ctx.a_index < 0) {
-    printf("Fail to retrieve input stream information\n");
+    printf("Failed to retrieve input stream information\n");
     return -1;
   }
 
