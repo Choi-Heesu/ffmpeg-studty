@@ -35,14 +35,14 @@ int main(int argc, const char** argv) {
     return 0;
   }
 
-  // 파일에 대한 정보를 출력한다
+  // 파일에 대한 정보를 출력
   av_dump_format(output_file_ctx.av_format_ctx, 0, output_file_ctx.av_format_ctx->url, 1);
 
   AVPacket av_packet;
   int out_stream_index;
   int ret;
 
-  // 입력 스트림에서 패킷을 하나씩 출력 스트림으로 복사한다
+  // 입력 스트림에서 패킷을 하나씩 출력 스트림으로 복사
   while (true) {
     ret = av_read_frame(input_file_ctx.av_format_ctx, &av_packet);
     if (ret == AVERROR_EOF) {
@@ -61,7 +61,7 @@ int main(int argc, const char** argv) {
                                                                          : output_file_ctx.a_index);
     AVStream* out_stream = output_file_ctx.av_format_ctx->streams[out_stream_index];
 
-    // 패킷의 PTS, DTS, Duration을 다시 계산한다
+    // 패킷의 PTS, DTS, Duration을 다시 계산
     av_packet.pts = av_rescale_q_rnd(av_packet.pts, in_stream->time_base, out_stream->time_base,
                                      AV_ROUND_NEAR_INF);
     av_packet.dts = av_rescale_q_rnd(av_packet.dts, in_stream->time_base, out_stream->time_base,
@@ -69,19 +69,22 @@ int main(int argc, const char** argv) {
     av_packet.duration =
         av_rescale_q(av_packet.duration, in_stream->time_base, out_stream->time_base);
 
-    // pos는 스트림의 byte 위치를 의미하며 알 수 없는 경우 -1로 표시한다
+    // pos는 스트림의 byte 위치를 의미하며 알 수 없는 경우 -1로 표시
     av_packet.pos = -1;
     av_packet.stream_index = out_stream_index;
 
-    // 다시 계산한 패킷 정보를 AVFormatContext에 입력한다
+    // 다시 계산한 패킷 정보를 AVFormatContext에 입력
     if (av_interleaved_write_frame(output_file_ctx.av_format_ctx, &av_packet) < 0) {
       printf("Error occured when writing packet into file\n");
       break;
     }
+
+    // av_packet_unref(과거에는 av_free_packet)는 패킷을 다 쓴 후 해제하는 함수 (내부 청소용)
+    // av_packet_free는 동적 할당한 패킷을 해제하는 함수 (할당 해제용)
     av_packet_unref(&av_packet);
   }
 
-  // AVPacket을 쓰는 시점에 정리하지 못한 정보들을 출력 미디어 파일에 쓴다
+  // AVPacket을 쓰는 시점에 정리하지 못한 정보들을 출력 미디어 파일에 씀
   // (moov 헤더처럼 모든 스트림 정보가 있어야 추가할 수 있는 정보들이 있음)
   av_write_trailer(output_file_ctx.av_format_ctx);
   release();
@@ -138,7 +141,7 @@ static int create_output(const char* filename) {
     AVStream* in_stream = input_file_ctx.av_format_ctx->streams[index];
     AVCodecParameters* in_codec_params = in_stream->codecpar;
 
-    // 새로운 스트림을 생성한다
+    // 새로운 스트림을 생성
     AVStream* out_stream = avformat_new_stream(output_file_ctx.av_format_ctx, NULL);
 
     if (!out_stream) {
@@ -159,7 +162,7 @@ static int create_output(const char* filename) {
     }
   }
 
-  // avio_open()은 fopen과 같은 역할을 하는 함수로 아무것도 쓰이지 않은 빈 파일을 생성할 때 사용한다
+  // avio_open()은 fopen과 같은 역할을 하는 함수로 아무것도 쓰이지 않은 빈 파일을 생성할 때 사용
   if (!(output_file_ctx.av_format_ctx->oformat->flags & AVFMT_NOFILE)) {
     if (avio_open(&output_file_ctx.av_format_ctx->pb, filename, AVIO_FLAG_WRITE) < 0) {
       printf("Failed to create output file\n");
@@ -168,7 +171,7 @@ static int create_output(const char* filename) {
   }
 
   // avformat_write_header()는 컨테이너의 규격에 맞는 헤더를 생성하는 함수로 AVFormatContext의
-  // 컨테이너 정보와 AVStream의 스트림 정보를 기반으로 헤더를 쓴다
+  // 컨테이너 정보와 AVStream의 스트림 정보를 기반으로 헤더를 씀
   if (avformat_write_header(output_file_ctx.av_format_ctx, NULL) < 0) {
     printf("Failed writing header into output file\n");
     return -1;
@@ -179,7 +182,7 @@ static int create_output(const char* filename) {
 
 static void release() {
   // avformat_open_input()으로 메모리를 할당했으면 avformat_close_input()으로 해제해야 메모리 릭이
-  // 발생하지 않는다
+  // 발생하지 않음
   if (input_file_ctx.av_format_ctx) {
     avformat_close_input(&input_file_ctx.av_format_ctx);
   }
@@ -187,6 +190,6 @@ static void release() {
   if (!(output_file_ctx.av_format_ctx->oformat->flags & AVFMT_NOFILE)) {
     avio_closep(&output_file_ctx.av_format_ctx->pb);
   }
-  // AVFormatContext 내부에서 할당한 메모리를 해제한다
+  // AVFormatContext 내부에서 할당한 메모리를 해제
   avformat_free_context(output_file_ctx.av_format_ctx);
 }
