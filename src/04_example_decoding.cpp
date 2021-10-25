@@ -67,7 +67,6 @@ int main(int argc, const char** argv) {
     av_packet_rescale_ts(&av_packet, av_stream->time_base, (*av_codec_ctx)->time_base);
 
     ret = decode_packet(av_codec_ctx, &av_packet, &decoded_frame);
-
     if (ret >= 0) {
       printf("-----------------------\n");
       if ((*av_codec_ctx)->codec_type == AVMEDIA_TYPE_VIDEO) {
