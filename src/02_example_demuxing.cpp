@@ -1,8 +1,8 @@
 extern "C" {
 #include <libavcodec/avcodec.h>
 #include <libavformat/avformat.h>
-#include <stdio.h>
 }
+#include <cstdio>
 
 struct FileContext {
   AVFormatContext* av_format_ctx;
@@ -10,13 +10,12 @@ struct FileContext {
   int a_index;
 };
 
-static FileContext input_ctx;
+FileContext input_ctx;
 
-static int open_input(const char* filename);
-static void release();
+int open_input(const char* filename);
+void release();
 
 int main(int argc, const char** argv) {
-  // FFmpeg 라이브러리의 로그 레벨을 지정할 수 있음
   av_log_set_level(AV_LOG_INFO);
 
   if (argc < 2) {
@@ -29,12 +28,12 @@ int main(int argc, const char** argv) {
     return 0;
   }
 
-  // AVPacket은 코덱으로 압축된 스트림 데이터를 저장하는 데 사용
+  // AVPacket 구조체는 코덱으로 압축된 스트림 데이터를 저장하는 데 사용
   AVPacket av_packet;
   int ret;
 
   while (true) {
-    // AVFormatContext로부터 패킷을 순서대로 읽어 AVPacket에 저장
+    // AVFormatContext 구조체로부터 패킷을 순서대로 읽어 AVPacket 구조체에 저장
     ret = av_read_frame(input_ctx.av_format_ctx, &av_packet);
     if (ret == AVERROR_EOF) {
       //더 이상 읽어올 패킷이 없음
@@ -48,7 +47,7 @@ int main(int argc, const char** argv) {
       printf("Audio packet\n");
     }
 
-    // AVPacket 내부에서 할당한 메모리 해제
+    // AVPacket 구조체에 할당한 메모리 해제
     av_packet_unref(&av_packet);
   }
 
@@ -57,16 +56,16 @@ int main(int argc, const char** argv) {
   return 0;
 }
 
-static int open_input(const char* filename) {
-  input_ctx.av_format_ctx = NULL;
+int open_input(const char* filename) {
+  input_ctx.av_format_ctx = nullptr;
   input_ctx.v_index = input_ctx.a_index = -1;
 
-  if (avformat_open_input(&input_ctx.av_format_ctx, filename, NULL, NULL) < 0) {
-    printf("Couln't open video file\n");
+  if (avformat_open_input(&input_ctx.av_format_ctx, filename, nullptr, nullptr) < 0) {
+    printf("Couldn't open video file\n");
     return -1;
   }
 
-  if (avformat_find_stream_info(input_ctx.av_format_ctx, NULL) < 0) {
+  if (avformat_find_stream_info(input_ctx.av_format_ctx, nullptr) < 0) {
     printf("Failed to retrieve input stream information\n");
     return -1;
   }
@@ -88,7 +87,7 @@ static int open_input(const char* filename) {
   return 0;
 }
 
-static void release() {
+void release() {
   if (input_ctx.av_format_ctx) {
     avformat_close_input(&input_ctx.av_format_ctx);
   }

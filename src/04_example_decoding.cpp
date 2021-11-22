@@ -3,8 +3,8 @@ extern "C" {
 #include <libavformat/avformat.h>
 #include <libavutil/avutil.h>
 #include <libavutil/common.h>
-#include <stdio.h>
 }
+#include <cstdio>
 
 struct FileContext {
   AVFormatContext* av_format_ctx;
@@ -22,11 +22,10 @@ int decode_packet(AVCodecContext** av_codec_ctx, AVPacket* av_packet, AVFrame** 
 void release();
 
 int main(int argc, const char** argv) {
-  // FFmpeg 라이브러리의 로그 레벨을 지정할 수 있음
   av_log_set_level(AV_LOG_INFO);
 
   if (argc < 2) {
-    printf("Not enough arugments entered\n");
+    printf("Not enough arguments entered\n");
     return -1;
   }
 
@@ -35,7 +34,7 @@ int main(int argc, const char** argv) {
     return -1;
   }
 
-  // AVFrame은 디코딩한 raw 데이터를 저장하는 구조체
+  // AVFrame 구조체는 디코딩한 raw 데이터를 저장하는 구조체
   AVFrame* decoded_frame = av_frame_alloc();
   if (!decoded_frame) {
     release();
@@ -89,17 +88,17 @@ int main(int argc, const char** argv) {
 }
 
 int open_input(const char* filename) {
-  input_file_ctx.av_format_ctx = NULL;
-  input_file_ctx.video_codec_ctx = NULL;
-  input_file_ctx.audio_codec_ctx = NULL;
+  input_file_ctx.av_format_ctx = nullptr;
+  input_file_ctx.video_codec_ctx = nullptr;
+  input_file_ctx.audio_codec_ctx = nullptr;
   input_file_ctx.v_index = input_file_ctx.a_index = -1;
 
-  if (avformat_open_input(&(input_file_ctx.av_format_ctx), filename, NULL, NULL) < 0) {
+  if (avformat_open_input(&(input_file_ctx.av_format_ctx), filename, nullptr, nullptr) < 0) {
     printf("Couldn't open input file %s\n", filename);
     return -1;
   }
 
-  if (avformat_find_stream_info(input_file_ctx.av_format_ctx, NULL) < 0) {
+  if (avformat_find_stream_info(input_file_ctx.av_format_ctx, nullptr) < 0) {
     printf("Failed to retrieve input stream information\n");
     return -1;
   }
@@ -130,7 +129,7 @@ int open_decoder(AVCodecParameters* av_codec_params, AVCodecContext** av_codec_c
   // 코덱 ID를 통해 FFmpeg 라이브러리가 자동으로 코덱을 찾도록 함
   AVCodec* av_decoder = avcodec_find_decoder(av_codec_params->codec_id);
   if (!av_decoder) {
-    printf("Couln't find AVCodec\n");
+    printf("Couldn't find AVCodec\n");
     return -1;
   }
 
@@ -141,12 +140,12 @@ int open_decoder(AVCodecParameters* av_codec_params, AVCodecContext** av_codec_c
   }
 
   if (avcodec_parameters_to_context(*av_codec_ctx, av_codec_params) < 0) {
-    printf("Couldn't initalize AVCodecContext\n");
+    printf("Couldn't initialize AVCodecContext\n");
     return -1;
   }
 
-  if (avcodec_open2(*av_codec_ctx, av_decoder, NULL) < 0) {
-    printf("Couln't open codec\n");
+  if (avcodec_open2(*av_codec_ctx, av_decoder, nullptr) < 0) {
+    printf("Couldn't open codec\n");
     return -1;
   }
 
@@ -154,7 +153,7 @@ int open_decoder(AVCodecParameters* av_codec_params, AVCodecContext** av_codec_c
 }
 
 int decode_packet(AVCodecContext** av_codec_ctx, AVPacket* av_packet, AVFrame** av_frame) {
-  int ret = 0;
+  int ret;
 
   ret = avcodec_send_packet(*av_codec_ctx, av_packet);
   if (ret < 0) {

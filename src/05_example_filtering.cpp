@@ -1,14 +1,13 @@
 extern "C" {
 #include <libavcodec/avcodec.h>
-#include <libavformat/avformat.h>
-#include <libavutil/avutil.h>
-#include <libavutil/common.h>
-
 #include <libavfilter/avfilter.h>
 #include <libavfilter/buffersink.h>
 #include <libavfilter/buffersrc.h>
-#include <stdio.h>
+#include <libavformat/avformat.h>
+#include <libavutil/avutil.h>
+#include <libavutil/common.h>
 }
+#include <cstdio>
 
 struct FileContext {
   AVFormatContext* av_format_ctx;
@@ -40,11 +39,10 @@ int init_audio_filter();
 void release();
 
 int main(int argc, const char** argv) {
-  // FFmpeg 라이브러리의 로그 레벨을 지정할 수 있음
   av_log_set_level(AV_LOG_INFO);
 
   if (argc < 2) {
-    printf("Not enough arugments entered\n");
+    printf("Not enough arguments entered\n");
     return -1;
   }
 
@@ -63,7 +61,6 @@ int main(int argc, const char** argv) {
     return -1;
   }
 
-  // AVFrame은 디코딩한 raw 데이터를 저장하는 구조체
   AVFrame* decoded_frame = av_frame_alloc();
   if (!decoded_frame) {
     release();
@@ -147,17 +144,17 @@ int main(int argc, const char** argv) {
 }
 
 int open_input(const char* filename) {
-  input_file_ctx.av_format_ctx = NULL;
-  input_file_ctx.video_codec_ctx = NULL;
-  input_file_ctx.audio_codec_ctx = NULL;
+  input_file_ctx.av_format_ctx = nullptr;
+  input_file_ctx.video_codec_ctx = nullptr;
+  input_file_ctx.audio_codec_ctx = nullptr;
   input_file_ctx.v_index = input_file_ctx.a_index = -1;
 
-  if (avformat_open_input(&(input_file_ctx.av_format_ctx), filename, NULL, NULL) < 0) {
+  if (avformat_open_input(&(input_file_ctx.av_format_ctx), filename, nullptr, nullptr) < 0) {
     printf("Couldn't open input file %s\n", filename);
     return -1;
   }
 
-  if (avformat_find_stream_info(input_file_ctx.av_format_ctx, NULL) < 0) {
+  if (avformat_find_stream_info(input_file_ctx.av_format_ctx, nullptr) < 0) {
     printf("Failed to retrieve input stream information\n");
     return -1;
   }
@@ -187,7 +184,7 @@ int open_input(const char* filename) {
 int open_decoder(AVCodecParameters* av_codec_params, AVCodecContext** av_codec_ctx) {
   AVCodec* av_decoder = avcodec_find_decoder(av_codec_params->codec_id);
   if (!av_decoder) {
-    printf("Couln't find AVCodec\n");
+    printf("Couldn't find AVCodec\n");
     return -1;
   }
 
@@ -198,12 +195,12 @@ int open_decoder(AVCodecParameters* av_codec_params, AVCodecContext** av_codec_c
   }
 
   if (avcodec_parameters_to_context(*av_codec_ctx, av_codec_params) < 0) {
-    printf("Couldn't initalize AVCodecContext\n");
+    printf("Couldn't initialize AVCodecContext\n");
     return -1;
   }
 
-  if (avcodec_open2(*av_codec_ctx, av_decoder, NULL) < 0) {
-    printf("Couln't open codec\n");
+  if (avcodec_open2(*av_codec_ctx, av_decoder, nullptr) < 0) {
+    printf("Couldn't open codec\n");
     return -1;
   }
 
@@ -211,7 +208,7 @@ int open_decoder(AVCodecParameters* av_codec_params, AVCodecContext** av_codec_c
 }
 
 int decode_packet(AVCodecContext** av_codec_ctx, AVPacket* av_packet, AVFrame** av_frame) {
-  int ret = 0;
+  int ret;
 
   ret = avcodec_send_packet(*av_codec_ctx, av_packet);
   if (ret < 0) {
@@ -236,9 +233,9 @@ int init_video_filter() {
   AVFilterInOut* outputs;
   char args[512];
 
-  video_filter_ctx.av_filter_graph = NULL;
-  video_filter_ctx.src_filter_ctx = NULL;
-  video_filter_ctx.sink_filter_ctx = NULL;
+  video_filter_ctx.av_filter_graph = nullptr;
+  video_filter_ctx.src_filter_ctx = nullptr;
+  video_filter_ctx.sink_filter_ctx = nullptr;
 
   video_filter_ctx.av_filter_graph = avfilter_graph_alloc();
   if (!video_filter_ctx.av_filter_graph) {
@@ -255,7 +252,7 @@ int init_video_filter() {
            av_codec_ctx->height, av_codec_ctx->pix_fmt, av_codec_ctx->sample_aspect_ratio.num,
            av_codec_ctx->sample_aspect_ratio.den);
   if (avfilter_graph_create_filter(&video_filter_ctx.src_filter_ctx, avfilter_get_by_name("buffer"),
-                                   "in", args, NULL, video_filter_ctx.av_filter_graph) < 0) {
+                                   "in", args, nullptr, video_filter_ctx.av_filter_graph) < 0) {
     printf("Failed to create video buffer source\n");
     return -1;
   }
@@ -266,7 +263,7 @@ int init_video_filter() {
   }
 
   if (avfilter_graph_create_filter(&video_filter_ctx.sink_filter_ctx,
-                                   avfilter_get_by_name("buffersink"), "out", NULL, NULL,
+                                   avfilter_get_by_name("buffersink"), "out", nullptr, nullptr,
                                    video_filter_ctx.av_filter_graph) < 0) {
     printf("Failed to create video buffer sink\n");
     return -1;
@@ -275,7 +272,7 @@ int init_video_filter() {
   snprintf(args, sizeof(args), "%d:%d", dst_width, dst_height);
 
   if (avfilter_graph_create_filter(&rescale_filter, avfilter_get_by_name("scale"), "scale", args,
-                                   NULL, video_filter_ctx.av_filter_graph) < 0) {
+                                   nullptr, video_filter_ctx.av_filter_graph) < 0) {
     printf("Failed to create video scale filter\n");
     return -1;
   }
@@ -290,7 +287,7 @@ int init_video_filter() {
     return -1;
   }
 
-  if (avfilter_graph_config(video_filter_ctx.av_filter_graph, NULL) < 0) {
+  if (avfilter_graph_config(video_filter_ctx.av_filter_graph, nullptr) < 0) {
     printf("Failed to configure video filter context\n");
     return -1;
   }
@@ -312,9 +309,9 @@ int init_audio_filter() {
   AVFilterInOut* outputs;
   char args[512];
 
-  audio_filter_ctx.av_filter_graph = NULL;
-  audio_filter_ctx.src_filter_ctx = NULL;
-  audio_filter_ctx.sink_filter_ctx = NULL;
+  audio_filter_ctx.av_filter_graph = nullptr;
+  audio_filter_ctx.src_filter_ctx = nullptr;
+  audio_filter_ctx.sink_filter_ctx = nullptr;
 
   audio_filter_ctx.av_filter_graph = avfilter_graph_alloc();
   if (!audio_filter_ctx.av_filter_graph) {
@@ -331,7 +328,7 @@ int init_audio_filter() {
            av_get_sample_fmt_name(av_codec_ctx->sample_fmt), av_codec_ctx->channel_layout);
 
   if (avfilter_graph_create_filter(&audio_filter_ctx.src_filter_ctx,
-                                   avfilter_get_by_name("abuffer"), "in", args, NULL,
+                                   avfilter_get_by_name("abuffer"), "in", args, nullptr,
                                    audio_filter_ctx.av_filter_graph) < 0) {
     printf("Failed to create audio buffer source\n");
     return -1;
@@ -343,7 +340,7 @@ int init_audio_filter() {
   }
 
   if (avfilter_graph_create_filter(&audio_filter_ctx.sink_filter_ctx,
-                                   avfilter_get_by_name("abuffersink"), "out", NULL, NULL,
+                                   avfilter_get_by_name("abuffersink"), "out", nullptr, nullptr,
                                    audio_filter_ctx.av_filter_graph) < 0) {
     printf("Failed to create audio buffer sink\n");
     return -1;
@@ -353,7 +350,7 @@ int init_audio_filter() {
            dst_ch_layout);
 
   if (avfilter_graph_create_filter(&resample_filter, avfilter_get_by_name("aformat"), "aformat",
-                                   args, NULL, audio_filter_ctx.av_filter_graph) < 0) {
+                                   args, nullptr, audio_filter_ctx.av_filter_graph) < 0) {
     printf("Failed to create audio format filter\n");
     return -1;
   }
@@ -368,7 +365,7 @@ int init_audio_filter() {
     return -1;
   }
 
-  if (avfilter_graph_config(audio_filter_ctx.av_filter_graph, NULL) < 0) {
+  if (avfilter_graph_config(audio_filter_ctx.av_filter_graph, nullptr) < 0) {
     printf("Failed to configure audio filter context\n");
     return -1;
   }
