@@ -1,4 +1,6 @@
 .DS_Store
 .vscode/
+.idea
 build/
+cmake-build-debug/
 *.pgm

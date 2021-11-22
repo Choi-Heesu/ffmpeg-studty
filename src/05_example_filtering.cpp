@@ -87,6 +87,7 @@ int main(int argc, const char** argv) {
     if (av_packet.stream_index != input_file_ctx.v_index &&
         av_packet.stream_index != input_file_ctx.a_index) {
       av_packet_unref(&av_packet);
+      continue;
     }
 
     AVStream* av_stream = input_file_ctx.av_format_ctx->streams[av_packet.stream_index];

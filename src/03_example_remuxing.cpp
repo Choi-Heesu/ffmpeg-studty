@@ -127,7 +127,7 @@ static int create_output(const char* filename) {
   output_file_ctx.av_format_ctx = NULL;
   output_file_ctx.v_index = output_file_ctx.a_index = -1;
 
-  if (avformat_alloc_output_context2(&output_file_ctx.av_format_ctx, NULL, NULL, filename) < 0) {
+  if (avformat_alloc_output_context2(&(output_file_ctx.av_format_ctx), NULL, NULL, filename) < 0) {
     printf("Couldn't create output file context\n");
     return -1;
   }
@@ -143,7 +143,6 @@ static int create_output(const char* filename) {
 
     // 새로운 스트림을 생성
     AVStream* out_stream = avformat_new_stream(output_file_ctx.av_format_ctx, NULL);
-
     if (!out_stream) {
       printf("Failed to allocate output stream\n");
       return -1;
